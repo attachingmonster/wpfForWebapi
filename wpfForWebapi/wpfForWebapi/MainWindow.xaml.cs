@@ -22,7 +22,10 @@ namespace wpfForWebapi
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region 成员定义
+
         HttpClient client = new HttpClient();
+        #endregion
         public MainWindow()
         {
             InitializeComponent();
@@ -160,39 +163,43 @@ namespace wpfForWebapi
             pbxSurePasswordRegister.Password = tbxSurePasswordRegister.Text;
         }
 
-        #endregion
+        /// <summary>
+        /// 注册信息提交webapi
+        /// </summary>
+        /// <param name="viewModelRegister">注册信息，与webapi定义一模一样</param>
+        /// <returns>注册的结果，与webapi定义一模一样</returns>
         private async Task<ViewModelInformation> PostView(ViewModelRegister viewModelRegister)
         {
-            ViewModelInformation modelInformation = null;
-            //将用户发送给api服务器，判断是否登录成功
+            //异常中断，程序不会破溃
+            ViewModelInformation viewModelInformation = null;
             try
             {
-
-                //Post提交数据时直接把要提交的数据格式要和Webapi的接收格式一致。不需要再转换了
+                //Post异步提交信息，格式为Json
                 var response = await client.PostAsJsonAsync("http://localhost:60033/api/Register/PostRegister", viewModelRegister);
                 response.EnsureSuccessStatusCode();
-                 modelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();//MsgDTO需和WebApi的MSGHelper这个类保持一致
-                if (modelInformation== null)
+                 viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                if (viewModelInformation== null)
                 {
-                    modelInformation.message = "网络错误";
-                    return modelInformation;
+                    viewModelInformation.message = "网络错误";
+                    return viewModelInformation;
                 }       
                 else
                 {
-                    return modelInformation;
+                    return viewModelInformation;
                 }
             }
             catch (HttpRequestException ex)
             {
-                modelInformation.message = ex.Message;
-                return modelInformation;
+                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
+                viewModelInformation.message = ex.Message;
+                return viewModelInformation;
             }
             catch (System.FormatException)
             {
-                return modelInformation;
+                return viewModelInformation;
             }
         }
-
+        #endregion
         private void UserAccount_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
