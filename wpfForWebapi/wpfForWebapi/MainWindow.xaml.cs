@@ -192,5 +192,10 @@ namespace wpfForWebapi
                 return modelInformation;
             }
         }
+
+        private void UserAccount_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace wpfForWebapi.Model
 {
-    public class SysUser
+    public class Data
     {
         public int ID { get; set; } 
     }

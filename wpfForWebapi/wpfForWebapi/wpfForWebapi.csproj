@@ -70,6 +70,9 @@
     </ApplicationDefinition>
     <Compile Include="DAL\AccountContext.cs" />
     <Compile Include="DAL\AccountInitializer.cs" />
+    <Compile Include="DAL\UnitOfWork.cs" />
+    <Compile Include="Repositoties\GenericRepository.cs" />
+    <Compile Include="Repositoties\IGenericRepository.cs" />
     <Compile Include="ViewModels\ViewModelInformation.cs" />
     <Compile Include="ViewModels\ViewModelRegister.cs" />
     <Page Include="MainWindow.xaml">
@@ -86,7 +89,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\SysUser.cs" />
+    <Compile Include="Model\Data.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -113,9 +116,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Repositoties\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Images\927_gtx03.jpg" />
   </ItemGroup>
