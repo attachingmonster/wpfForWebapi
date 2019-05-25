@@ -65,9 +65,13 @@ namespace wpfForWebapi
 
         }
 
-        private void Login_Click(object sender, RoutedEventArgs e)
+        private async void Login_Click(object sender, RoutedEventArgs e)
         {
-
+            ViewModelLogin viewModelLogin = new ViewModelLogin();
+            viewModelLogin.Account = cbxUserAccountLogin.Text;
+            viewModelLogin.Password = pbxUserPasswordLogin.Password;
+            ViewModelInformation viewModelInformation = new ViewModelInformation();
+            viewModelInformation = await LoginView(viewModelLogin);
         }
 
         #region 注册账号界面
@@ -87,17 +91,61 @@ namespace wpfForWebapi
                 pbxUserPasswordRegister.Password = tbxUserPasswordRegister.Text;
                 pbxSurePasswordRegister.Password = tbxSurePasswordRegister.Text;
             }
-            String UserAnswer = "1" + tbxUserAnswer1Register.Text + "2" + tbxUserAnswer2Register.Text + "3" + tbxUserAnswer3Register.Text + "4" + tbxUserAnswer4Register.Text + "5" + tbxUserAnswer5Register.Text;//拾回密码的各个答案与问题号的连接
-            ViewModelRegister viewModelRegister = new ViewModelRegister();
-            viewModelRegister.Account = tbxUserAccountRegister.Text;
-            viewModelRegister.Password = pbxUserPasswordRegister.Password;
-            viewModelRegister.RememberPasswerd = pbxSurePasswordRegister.Password;
-            viewModelRegister.RememberPasswerd = "0";
-            viewModelRegister.RoleName = cbxUserRoleRegister.Text;
-            viewModelRegister.Answer = UserAnswer;
-            ViewModelInformation viewModelInformation = new ViewModelInformation();
-            viewModelInformation= await PostView(viewModelRegister);
-      
+            try
+            {
+                #region 账号规范
+                foreach (char c in tbxUserAccountRegister.Text)   //规范账号必须由字母和数字构成
+                {
+                    if (!(('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')))
+                    {
+                        throw new Exception("账号必须只由字母和数字构成！");
+                    }
+                }
+                #endregion
+                #region 密码规范
+                int number = 0, character = 0;
+                foreach (char c in pbxUserPasswordRegister.Password)   //规范密码必须由ASCII码33~126之间的字符构成
+                {
+                    if (!(33 <= c && c <= 126))
+                    {
+                        throw new Exception("符号错误，请重新输入！");
+                    }
+                    if ('0' <= c && c <= '9') //number记录数字个数
+                    {
+                        number++;
+                    }
+                    else                      //character记录字符个数
+                    {
+                        character++;
+                    }
+                }
+                if (number < 5 || character < 2)  //密码的安全系数
+                {
+                    throw new Exception("密码安全系数太低！");
+                }
+                #endregion
+                if (pbxUserPasswordRegister.Password == pbxSurePasswordRegister.Password)
+                {
+                    String UserAnswer = "1" + tbxUserAnswer1Register.Text + "2" + tbxUserAnswer2Register.Text + "3" + tbxUserAnswer3Register.Text + "4" + tbxUserAnswer4Register.Text + "5" + tbxUserAnswer5Register.Text;//拾回密码的各个答案与问题号的连接
+                    ViewModelRegister viewModelRegister = new ViewModelRegister();
+                    viewModelRegister.Account = tbxUserAccountRegister.Text;
+                    viewModelRegister.Password = pbxUserPasswordRegister.Password;
+                    viewModelRegister.SurePassword = pbxSurePasswordRegister.Password;
+                    viewModelRegister.RememberPasswerd = "0";
+                    viewModelRegister.RoleName = cbxUserRoleRegister.Text;
+                    viewModelRegister.QuestionOrAnswer = UserAnswer;
+                    ViewModelInformation viewModelInformation = new ViewModelInformation();
+                    viewModelInformation = await PostView(viewModelRegister);
+                }
+                else
+                {
+                    throw new Exception("两次输入的密码不一致！");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("注册失败！错误信息：\n" + ex.Message);
+            }                    
         }
         private void registerBack1_Click(object sender, RoutedEventArgs e)   //返回事件
         {
@@ -177,10 +225,10 @@ namespace wpfForWebapi
                 //Post异步提交信息，格式为Json
                 var response = await client.PostAsJsonAsync("http://localhost:60033/api/Register/PostRegister", viewModelRegister);
                 response.EnsureSuccessStatusCode();
-                 viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
                 if (viewModelInformation== null)
                 {
-                    viewModelInformation.message = "网络错误";
+                    viewModelInformation.Message = "网络错误";
                     return viewModelInformation;
                 }       
                 else
@@ -191,7 +239,43 @@ namespace wpfForWebapi
             catch (HttpRequestException ex)
             {
                 //后续保存到数据库里，另外再续返回到webapi的数据库里备查
-                viewModelInformation.message = ex.Message;
+                viewModelInformation.Message = ex.Message;
+                return viewModelInformation;
+            }
+            catch (System.FormatException)
+            {
+                return viewModelInformation;
+            }
+        }
+
+
+        /// <summary>
+        /// 登录信息提交webapi
+        /// </summary>
+        private async Task<ViewModelInformation> LoginView(ViewModelLogin viewModelLogin)
+        {
+            //异常中断，程序不会破溃
+            ViewModelInformation viewModelInformation = null;
+            try
+            {
+                //Post异步提交信息，格式为Json
+                var response = await client.PostAsJsonAsync("http://localhost:60033/api/Login/PostLogin", viewModelLogin);
+                response.EnsureSuccessStatusCode();
+                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                if (viewModelInformation == null)
+                {
+                    viewModelInformation.Message = "网络错误";
+                    return viewModelInformation;
+                }
+                else
+                {
+                    return viewModelInformation;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
+                viewModelInformation.Message = ex.Message;
                 return viewModelInformation;
             }
             catch (System.FormatException)

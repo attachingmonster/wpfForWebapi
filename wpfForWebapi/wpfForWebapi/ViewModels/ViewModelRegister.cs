@@ -26,7 +26,7 @@ namespace wpfForWebapi.ViewModels
         /// <summary>
         /// 问题与答案，属于敏感信息，需要加密，建议改为 QuestionOrAnswer
         /// </summary>
-        public String Answer { get; set; }
+        public String QuestionOrAnswer { get; set; }
         /// <summary>
         /// 记忆密码，自动登录
         /// </summary>

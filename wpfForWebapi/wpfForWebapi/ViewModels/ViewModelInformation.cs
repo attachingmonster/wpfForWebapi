@@ -14,6 +14,6 @@ namespace wpfForWebapi.ViewModels
         /// <summary>
         /// WebAPI返回的信息，包括注册、登陆等
         /// </summary>
-        public String message { get; set; }
+        public String Message { get; set; }
     }
 }
