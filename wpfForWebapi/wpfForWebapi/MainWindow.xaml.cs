@@ -32,7 +32,9 @@ namespace wpfForWebapi
         #endregion
         public MainWindow()
         {
+           
             InitializeComponent();
+            var data = unitOfWork.DataRepository.Get();
         }
 
         #region 公用界面事件
@@ -52,25 +54,169 @@ namespace wpfForWebapi
         }
         #endregion
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                ViewModelInformation viewModelInformation = new ViewModelInformation();
+                ViewModelLogin viewModelLogin = new ViewModelLogin();
+                //combobox数据源连接本地数据库
+                var user = unitOfWork.DataRepository.Get();
+               
+                    cbxUserAccountLogin.ItemsSource = user.ToList();
+                    cbxUserAccountLogin.DisplayMemberPath = "UserAccount";  //combobox下拉显示的值
+                    cbxUserAccountLogin.SelectedValuePath = "UserAccount";  //combobox选中项显示的值
+                    cbxUserAccountLogin.SelectedIndex = 0;               //登录界面 combobox初始显示第一项
+                
+                //通过连接远程服务器判断是否记住密码
+                viewModelLogin.Account = cbxUserAccountLogin.Text;
+                viewModelInformation = await PostViewLogin(viewModelLogin);
+                if ("1".Equals(viewModelInformation.Message))
+                {
 
+                    pbxUserPasswordLogin.Password = CreateMD5.EncryptWithMD5(viewModelLogin.Account);//给passwordbox一串固定密码
+                    cheRememberPwdLogin.IsChecked = true;     //让记住密码选择框显示选中
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
-
-        
-
-      
-
-        private void LoginetrievePwd_Click(object sender, RoutedEventArgs e)
+    
+        #region 登陆界面
+        private async void Login_Click(object sender, RoutedEventArgs e)
         {
+            ViewModelInformation viewModelInformation = new ViewModelInformation();
+            ViewModelLogin viewModelLogin = new ViewModelLogin();
+            try
+            {
+                //对判断登陆所需的账号和密码传递，且密码加密传递
+                viewModelLogin.Account = cbxUserAccountLogin.Text;
+                viewModelLogin.Password = CreateMD5.EncryptWithMD5(pbxUserPasswordLogin.Password);      
+                viewModelInformation = await PostViewLogin(viewModelLogin);
+                //如果webapi传回的viewModelInformation的message符合条件，则进行登陆
+                if ("进行登陆".Equals(viewModelInformation.Message))
+                {
+                    //判断登录成功时是否记住密码
+                    if (cheRememberPwdLogin.IsChecked == true)
+                    {
+                        viewModelLogin.RememberPassword = "1";                       
+                    }
+                    else
+                    {
+                        viewModelLogin.RememberPassword = "0";               
+                    }
+                    viewModelInformation = await PostViewLogin(viewModelLogin);
+                    # region 不同角色进入不同窗口
+                    //通过webapi所返回的viewModelInformation的message判断用户登陆所用的角色
+                    /*if ("admin".Equals(viewModelInformation.Message))    
+                    {
+                        LabTextListView.Content = viewModelLogin.Account + "用户为管理员";
+                        LoginWindow.Visibility = Visibility.Collapsed;
+                        ListViewWindow.Visibility = Visibility.Visible;
+                        Height = 421;
+                        Width = 656;
 
+
+                    }*/
+                    if ("教师".Equals(viewModelInformation.Message))
+                    {
+                        StudentWindow.Visibility = Visibility.Collapsed;
+                        TeacherWindow.Visibility = Visibility.Visible;
+                        Left = 0;
+                        Top = 0;
+                        Width = 1920;
+                        Height = 1080;
+                    }
+                    else
+                    {
+                        StudentWindow.Visibility = Visibility.Visible;
+                        LoginWindow.Visibility = Visibility.Collapsed;
+                        Left = 0;
+                        Top = 0;
+                        Width = 1920;
+                        Height = 1080;
+                    }
+                    #endregion
+                }
+                else
+                {
+                    throw new Exception(viewModelInformation.Message);
+                }
+            }catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
-
-        private void Login_Click(object sender, RoutedEventArgs e)
+        private async void UserAccount_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            try
+            {
+                ViewModelInformation viewModelInformation = new ViewModelInformation();
+                ViewModelLogin viewModelLogin = new ViewModelLogin();
+                var data = unitOfWork.DataRepository.Get();
+                if (cbxUserAccountLogin.SelectedValue != null)//获取combobox选择的值
+                {
+                    //通过在数据库中搜寻combobox选择的值返回一个以combobox选择的值为UserAccount的对象
+                    var sysUser = data.Where(s => s.UserAccount.Equals(cbxUserAccountLogin.SelectedValue.ToString())).FirstOrDefault();
+                    if (sysUser != null)
+                    {
+                        viewModelLogin.Account = cbxUserAccountLogin.Text;
+                        viewModelInformation = await PostViewLogin(viewModelLogin);//通过在数据库中搜寻combobox第一项的值返回一个以combobox第一项的值为UserAccount的对象
+                        if ("1".Equals(viewModelInformation.Message))
+                        {
 
+                            pbxUserPasswordLogin.Password = CreateMD5.EncryptWithMD5(viewModelLogin.Account);//给passwordbox一串固定密码
+                            cheRememberPwdLogin.IsChecked = true;     //让记住密码选择框显示选中
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
+        /// <summary>
+        /// 登陆信息提交webapi
+        /// </summary>
+        /// <param name="viewModelLogin">登陆信息，与webapi定义一模一样</param>
+        /// <returns>登陆的结果，与webapi定义一模一样</returns>
+        private async Task<ViewModelInformation> PostViewLogin(ViewModelLogin viewModelLogin)
+        {
+            //异常中断，程序不会破溃
+            ViewModelInformation viewModelInformation = new ViewModelInformation();
+            try
+            {
 
+                //Post异步提交信息，格式为Json
+                var response = await client.PostAsJsonAsync("http://localhost:60033/api/Login/PostLogin", viewModelLogin);
+                response.EnsureSuccessStatusCode();
+                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                if (viewModelInformation == null)
+                {
+                    viewModelInformation.Message = "网络错误";
+                    return viewModelInformation;
+                }
+                else
+                {
+                    return viewModelInformation;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
+                viewModelInformation.Message = ex.Message;
+                return viewModelInformation;
+            }
+            catch (System.FormatException)
+            {
+                return viewModelInformation;
+            }
+        }
+        #endregion
         #region 注册账号界面
 
 
@@ -181,6 +327,26 @@ namespace wpfForWebapi
                     CurrentData.RoleName = viewModelRegister.RoleName;
                     unitOfWork.DataRepository.Insert(CurrentData);    //增加新SysUser
                     unitOfWork.Save();
+                    ViewModelInformation viewModelInformation2 = new ViewModelInformation();
+                    ViewModelLogin viewModelLogin = new ViewModelLogin();
+                    //combobox数据源连接本地数据库
+                    var user = unitOfWork.DataRepository.Get();
+
+                    cbxUserAccountLogin.ItemsSource = user.ToList();
+                    cbxUserAccountLogin.DisplayMemberPath = "UserAccount";  //combobox下拉显示的值
+                    cbxUserAccountLogin.SelectedValuePath = "UserAccount";  //combobox选中项显示的值
+                    cbxUserAccountLogin.SelectedIndex = 0;               //登录界面 combobox初始显示第一项
+
+                    //通过连接远程服务器判断是否记住密码
+                    viewModelLogin.Account = cbxUserAccountLogin.Text;
+                    viewModelInformation2 = await PostViewLogin(viewModelLogin);
+                    if ("1".Equals(viewModelInformation2.Message))
+                    {
+
+                        pbxUserPasswordLogin.Password = CreateMD5.EncryptWithMD5(viewModelLogin.Account);//给passwordbox一串固定密码
+                        cheRememberPwdLogin.IsChecked = true;     //让记住密码选择框显示选中
+
+                    }
                 }
             }
         }
@@ -381,43 +547,8 @@ namespace wpfForWebapi
                 }
             }
         }
-        /// <summary>
-        /// 修改密码界面的用户账号和原密码提交webapi
-        /// </summary>
-        /// <param name="viewModelChangePwd">判断所需的账号密码信息</param>
-        /// <returns>判断后的结果，与webapi定义一模一样</returns>
-        private async Task<ViewModelInformation> PostViewChangePwdModel(ViewModelChangePwd viewModelChangePwd)
-        {
-            ViewModelInformation viewModelInformation = null;
-            //异常中断，程序不会破溃          
-            try
-            {
-                //Post异步提交信息，格式为Json
-
-                var response = await client.PostAsJsonAsync("http://localhost:60033/api/ChangePwdModel/PostChangePwdModel", viewModelChangePwd);
-                response.EnsureSuccessStatusCode();
-                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
-                if (viewModelInformation == null)
-                {
-                    viewModelInformation.Message = "网络错误";
-                    return viewModelInformation;
-                }
-                else
-                {
-                    return viewModelInformation;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
-                viewModelInformation.Message = ex.Message;
-                return viewModelInformation;
-            }
-            catch (System.FormatException)
-            {
-                return viewModelInformation;
-            }
-        }
+        
+        
         /// <summary>
         /// 修改密码信息提交webapi
         /// </summary>
@@ -464,11 +595,11 @@ namespace wpfForWebapi
             pbxSurePasswordChangePwd.Password = "";
         }
         #endregion
-        private void UserAccount_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+
+        private void LoginetrievePwd_Click(object sender, RoutedEventArgs e)
         {
 
         }
-
-       
     }
 }

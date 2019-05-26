@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace wpfForWebapi.ViewModels
 {
+    /// <summary>
+    /// 修改密码
+    /// </summary>
     public class ViewModelChangePwd
     {
         /// <summary>

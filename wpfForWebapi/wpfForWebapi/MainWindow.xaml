@@ -352,6 +352,46 @@
                 </Button.Background>
             </Button>
       </Grid>
+        <Grid Name="TeacherWindow" Visibility="Collapsed" Margin="0,0,0,0">
+            <Image Source="Images/teacher.jpg"     />
+            <Label Content="欢迎登录教师窗口" HorizontalAlignment="Left" Margin="-442,-260,0,0" VerticalAlignment="Top" Height="45" Width="243" FontSize="20" FontFamily="Segoe UI Black" Foreground="#FFFBF9F9"/>
+            <Button Content="X" Grid.Column="2" HorizontalAlignment="Left" Margin="1890,-2,0,0" VerticalAlignment="Top" Width="30" Height="30" Foreground="#FFF5E8E8" RenderTransformOrigin="0.733,0.233" FontSize="18" Click="Close_Click">
+                <Button.BorderBrush>
+                    <SolidColorBrush Color="#FF707070" Opacity="0"/>
+                </Button.BorderBrush>
+                <Button.Background>
+                    <SolidColorBrush Color="#FFDDDDDD" Opacity="0"/>
+                </Button.Background>
+            </Button>
+            <Button Content="—" Grid.Column="2" HorizontalAlignment="Left" Margin="1860,-2,0,0" VerticalAlignment="Top" Width="30" Height="30" Foreground="#FFF5E8E8" RenderTransformOrigin="0.733,0.233" FontSize="16" Click="Min_Click"  >
+                <Button.BorderBrush>
+                    <SolidColorBrush Color="#FF707070" Opacity="0"/>
+                </Button.BorderBrush>
+                <Button.Background>
+                    <SolidColorBrush Color="#FFDDDDDD" Opacity="0"/>
+                </Button.Background>
+            </Button>
+        </Grid>
+        <Grid Name="StudentWindow" Visibility="Collapsed">
+            <Image Source="Images/student.jpg"    />
+            <Label Content="欢迎登录学生窗口" HorizontalAlignment="Left" Margin="-442,-260,0,0" VerticalAlignment="Top" Height="45" Width="243" FontSize="20" FontFamily="Segoe UI Black" Foreground="#FFFBF9F9"/>
+            <Button Content="X" Grid.Column="2" HorizontalAlignment="Left" Margin="1890,-2,0,0" VerticalAlignment="Top" Width="30" Height="30" Foreground="#FFF5E8E8" RenderTransformOrigin="0.733,0.233" FontSize="18" Click="Close_Click" d:IsHidden="True">
+                <Button.BorderBrush>
+                    <SolidColorBrush Color="#FF707070" Opacity="0"/>
+                </Button.BorderBrush>
+                <Button.Background>
+                    <SolidColorBrush Color="#FFDDDDDD" Opacity="0"/>
+                </Button.Background>
+            </Button>
+            <Button Content="—" Grid.Column="2" HorizontalAlignment="Left" Margin="1860,-2,0,0" VerticalAlignment="Top" Width="30" Height="30" Foreground="#FFF5E8E8" RenderTransformOrigin="0.733,0.233" FontSize="16" Click="Min_Click"  >
+                <Button.BorderBrush>
+                    <SolidColorBrush Color="#FF707070" Opacity="0"/>
+                </Button.BorderBrush>
+                <Button.Background>
+                    <SolidColorBrush Color="#FFDDDDDD" Opacity="0"/>
+                </Button.Background>
+            </Button>
+        </Grid>
     </Grid>
 </Window>
 
