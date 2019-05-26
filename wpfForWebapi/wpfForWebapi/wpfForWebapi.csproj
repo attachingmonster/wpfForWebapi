@@ -73,6 +73,7 @@
     <Compile Include="DAL\UnitOfWork.cs" />
     <Compile Include="Repositoties\GenericRepository.cs" />
     <Compile Include="Repositoties\IGenericRepository.cs" />
+    <Compile Include="ViewModels\ViewModelChangePsw.cs" />
     <Compile Include="ViewModels\ViewModelInformation.cs" />
     <Compile Include="ViewModels\ViewModelLogin.cs" />
     <Compile Include="ViewModels\ViewModelRegister.cs" />
@@ -117,7 +118,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="xk.jpg" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\927_gtx03.jpg" />
   </ItemGroup>
