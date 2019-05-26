@@ -11,5 +11,6 @@ namespace wpfForWebapi.ViewModels
         public String Account { get; set; }
        
         public String Password { get; set; }
+        public String RememberPasswerd { get; set; }
     }
 }

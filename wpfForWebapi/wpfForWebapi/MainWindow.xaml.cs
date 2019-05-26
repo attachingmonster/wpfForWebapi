@@ -70,6 +70,14 @@ namespace wpfForWebapi
             ViewModelLogin viewModelLogin = new ViewModelLogin();
             viewModelLogin.Account = cbxUserAccountLogin.Text;
             viewModelLogin.Password = pbxUserPasswordLogin.Password;
+            if (cheRememberPwdLogin.IsChecked == true)
+            {
+                viewModelLogin.RememberPasswerd ="1";
+            }
+            else
+            {
+                viewModelLogin.RememberPasswerd = "0";
+            }
             ViewModelInformation viewModelInformation = new ViewModelInformation();
             viewModelInformation = await LoginView(viewModelLogin);
         }
