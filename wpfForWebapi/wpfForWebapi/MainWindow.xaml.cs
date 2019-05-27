@@ -33,7 +33,7 @@ namespace wpfForWebapi
 
         #region 公用界面事件
 
-        private void Min_Click(object sender, RoutedEventArgs e)
+        private void Min_Click(object sender, RoutedEventArgs e)//缩小窗口
         {
             SystemCommands.MinimizeWindow(this);
         }
@@ -62,7 +62,8 @@ namespace wpfForWebapi
 
         private void loginetrievePwd_Click(object sender, RoutedEventArgs e)
         {
-
+            LoginWindow.Visibility = Visibility.Collapsed;
+            RetrievePasswordWindow.Visibility = Visibility.Visible;
         }
 
         private async void Login_Click(object sender, RoutedEventArgs e)
@@ -122,13 +123,15 @@ namespace wpfForWebapi
 
         #region 注册账号界面
 
+        Dictionary<string, string> dic = new Dictionary<string, string>();
+
         private void loginRegister_Click(object sender, RoutedEventArgs e)    //切换界面事件
         {
             LoginWindow.Visibility = Visibility.Collapsed;
             RegisterWindow.Visibility = Visibility.Visible;
             Height = 441;
         }
-        private async void Registering_Click(object sender, RoutedEventArgs e)
+        private async void Registering_Click(object sender, RoutedEventArgs e)//注册账号事件
         {
             if (tbxUserPasswordRegister.Visibility != Visibility.Collapsed)    //如果显示密码按钮事件开始，则让显示密码值赋值给隐藏密码的值
             {
@@ -170,7 +173,7 @@ namespace wpfForWebapi
                 #endregion
                 if (pbxUserPasswordRegister.Password == pbxSurePasswordRegister.Password)
                 {
-                    String UserAnswer = "1" + tbxUserAnswer1Register.Text + "2" + tbxUserAnswer2Register.Text + "3" + tbxUserAnswer3Register.Text + "4" + tbxUserAnswer4Register.Text + "5" + tbxUserAnswer5Register.Text;//拾回密码的各个答案与问题号的连接
+                    String UserAnswer = cbxRegister.Text+ tbxUserAnswerRegister.Text;
                     ViewModelRegister viewModelRegister = new ViewModelRegister();
                     viewModelRegister.Account = tbxUserAccountRegister.Text;
                     viewModelRegister.Password = pbxUserPasswordRegister.Password;
@@ -191,7 +194,25 @@ namespace wpfForWebapi
                 MessageBox.Show("注册失败！错误信息：\n" + ex.Message);
             }                    
         }
-        private void registerBack1_Click(object sender, RoutedEventArgs e)   //返回事件
+
+        private void CbxRegister_Loaded(object sender, RoutedEventArgs e)
+        {
+            dic.Add("你最喜欢的颜色是", "1");
+            dic.Add("你的生日是", "2");
+            dic.Add("你的父亲叫什么名字", "3");
+            dic.Add("你最喜欢做什么", "4");
+            dic.Add("你的梦想是", "5");
+            cbxRegister.ItemsSource = dic;
+            cbxRegister.DisplayMemberPath = "Key";
+            cbxRegister.SelectedIndex = 0;
+        }//注册界面的combobox的初始化下拉菜单事件
+
+        private void CbxRegister_SelectionChanged(object sender, SelectionChangedEventArgs e)//清空密保问题的答案事件
+        {
+            tbxUserAnswerRegister.Text = "";
+        }
+
+        private void registerBack1_Click(object sender, RoutedEventArgs e)   //注册界面的返回事件
         {
             RegisterWindow.Visibility = Visibility.Collapsed;
             LoginWindow.Visibility = Visibility.Visible;
@@ -199,11 +220,7 @@ namespace wpfForWebapi
             tbxUserAccountRegister.Text = "";
             pbxUserPasswordRegister.Password = "";
             pbxSurePasswordRegister.Password = "";
-            tbxUserAnswer1Register.Text = "";
-            tbxUserAnswer2Register.Text = "";
-            tbxUserAnswer3Register.Text = "";
-            tbxUserAnswer4Register.Text = "";
-            tbxUserAnswer5Register.Text = "";
+            tbxUserAnswerRegister.Text = "";          
             tbxUserPasswordRegister.Text = "";
             tbxSurePasswordRegister.Text = "";
 
@@ -294,7 +311,7 @@ namespace wpfForWebapi
         #endregion
 
         #region 修改密码界面
-        private async void ChangePsw_Click(object sender, RoutedEventArgs e)
+        private async void ChangePsw_Click(object sender, RoutedEventArgs e)//修改密码事件
         {
             ViewModelChangePsw viewModelChangePsw = new ViewModelChangePsw();
             viewModelChangePsw.Account = tbxUserAccountChangePwd.Text;
@@ -306,12 +323,16 @@ namespace wpfForWebapi
 
         }
 
-        private void changePwdBack_click(object sender, RoutedEventArgs e)
+        private void changePwdBack_click(object sender, RoutedEventArgs e)//修改密码界面的返回事件
         {
             ChangePasswordWindow.Visibility = Visibility.Collapsed;
             LoginWindow.Visibility = Visibility.Visible;
         }
 
+
+        /// <summary>
+        /// 修改密码信息提交webapi
+        /// </summary>
         private async Task<ViewModelInformation> ChangePswView(ViewModelChangePsw viewModelChangePsw)
         {
             //异常中断，程序不会破溃
@@ -346,12 +367,87 @@ namespace wpfForWebapi
 
         #endregion
 
+        #region 拾回密码和重置密码事件
 
+        Dictionary<string, string> dic2 = new Dictionary<string, string>();
+        private async void EtrievePwd_Click(object sender, RoutedEventArgs e)//找回密码事件
+        {
+            ViewModelRetrievePsw viewModelRetrievePsw = new ViewModelRetrievePsw();
+            viewModelRetrievePsw.Account = tbxUserAccountEtrievePwd.Text;
+            viewModelRetrievePsw.QuestionOrAnswer = cbxRetrieve.Text + tbxUserAnswerEtrievePwd.Text;
+            viewModelRetrievePsw.NewPassword = pbxUserPasswordResetPwd.Password;
+            viewModelRetrievePsw.SurePassword = pbxSurePasswordResetPwd.Password;
+            ViewModelInformation viewModelInformation = new ViewModelInformation();
+            viewModelInformation = await EtrievePwdView(viewModelRetrievePsw);
+            
+        }
+
+        private void etrievePwdBack_Click(object sender, RoutedEventArgs e)//找回密码界面的返回事件
+        {
+            RetrievePasswordWindow.Visibility = Visibility.Collapsed;
+            LoginWindow.Visibility = Visibility.Visible;
+            tbxUserAccountEtrievePwd.Text = "";
+            tbxUserAnswerEtrievePwd.Text = "";           
+        }
+
+
+        private void CbxRetrieve_Loaded(object sender, RoutedEventArgs e)
+        {
+            dic2.Add("你最喜欢的颜色是", "1");
+            dic2.Add("你的生日是", "2");
+            dic2.Add("你的父亲叫什么名字", "3");
+            dic2.Add("你最喜欢做什么", "4");
+            dic2.Add("你的梦想是", "5");
+            cbxRetrieve.ItemsSource = dic;
+            cbxRetrieve.DisplayMemberPath = "Key";
+            cbxRetrieve.SelectedIndex = 0;
+        }//找回密码界面的combobox的初始化下拉菜单事件
+
+        private void CbxRetrieve_SelectionChanged(object sender, SelectionChangedEventArgs e)//清空密保问题的答案事件
+        {
+            tbxUserAnswerEtrievePwd.Text = "";
+        }
+
+        /// <summary>
+        /// 找回密码信息提交webapi
+        /// </summary>
+        private async Task<ViewModelInformation> EtrievePwdView(ViewModelRetrievePsw viewModelRetrievePsw)
+        {
+            //异常中断，程序不会破溃
+            ViewModelInformation viewModelInformation = null;
+            try
+            {
+                //Post异步提交信息，格式为Json
+                var response = await client.PostAsJsonAsync("http://localhost:60033/api/RetrievePsw/PostRetrievePsw", viewModelRetrievePsw);
+                response.EnsureSuccessStatusCode();
+                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                if (viewModelInformation == null)
+                {
+                    viewModelInformation.Message = "网络错误";
+                    return viewModelInformation;
+                }
+                else
+                {
+                    return viewModelInformation;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
+                viewModelInformation.Message = ex.Message;
+                return viewModelInformation;
+            }
+            catch (System.FormatException)
+            {
+                return viewModelInformation;
+            }
+        }
+
+        #endregion
         private void UserAccount_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
         }
-
         
     }
 }
