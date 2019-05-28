@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using wpfForWebapi.Methods;
 using wpfForWebapi.ViewModels;
 
 namespace wpfForWebapi
@@ -140,53 +141,74 @@ namespace wpfForWebapi
             }
             try
             {
-                #region 账号规范
-                foreach (char c in tbxUserAccountRegister.Text)   //规范账号必须由字母和数字构成
+                if (tbxUserAccountRegister.Text!="")//判断账号是否为空
                 {
-                    if (!(('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')))
+                    if (pbxUserPasswordRegister.Password!="")//判断密码是否为空
                     {
-                        throw new Exception("账号必须只由字母和数字构成！");
+                        #region 账号规范
+                        foreach (char c in tbxUserAccountRegister.Text)   //规范账号必须由字母和数字构成
+                        {
+                            if (!(('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z')))
+                            {
+                                throw new Exception("账号必须只由字母和数字构成！");
+                            }
+                        }
+                        #endregion
+                        #region 密码规范
+                        int number = 0, character = 0;
+                        foreach (char c in pbxUserPasswordRegister.Password)   //规范密码必须由ASCII码33~126之间的字符构成
+                        {
+                            if (!(33 <= c && c <= 126))
+                            {
+                                throw new Exception("符号错误，请重新输入！");
+                            }
+                            if ('0' <= c && c <= '9') //number记录数字个数
+                            {
+                                number++;
+                            }
+                            else                      //character记录字符个数
+                            {
+                                character++;
+                            }
+                        }
+                        if (number < 5 || character < 2)  //密码的安全系数
+                        {
+                            throw new Exception("密码安全系数太低！");
+                        }
+                        #endregion
+                        if (tbxUserAnswerRegister.Text!="")//判断密码拾回问题答案是否为空
+                        {
+                            if (pbxUserPasswordRegister.Password == pbxSurePasswordRegister.Password)//判断密码和确认密码是否相同
+                            {
+                                String UserAnswer = cbxRegister.Text + tbxUserAnswerRegister.Text;
+                                ViewModelRegister viewModelRegister = new ViewModelRegister();
+                                viewModelRegister.Account = tbxUserAccountRegister.Text;
+                                viewModelRegister.Password = CreateMD5.EncryptWithMD5(pbxUserPasswordRegister.Password);
+                                viewModelRegister.SurePassword = CreateMD5.EncryptWithMD5(pbxSurePasswordRegister.Password);
+                                viewModelRegister.RememberPasswerd = "0";
+                                viewModelRegister.RoleName = cbxUserRoleRegister.Text;
+                                viewModelRegister.QuestionOrAnswer = CreateMD5.EncryptWithMD5(UserAnswer);
+                                ViewModelInformation viewModelInformation = new ViewModelInformation();
+                                viewModelInformation = await PostView(viewModelRegister);
+                            }
+                            else
+                            {
+                                throw new Exception("两次输入的密码不一致！");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("密码拾回问题答案不能为空！");
+                        }
                     }
-                }
-                #endregion
-                #region 密码规范
-                int number = 0, character = 0;
-                foreach (char c in pbxUserPasswordRegister.Password)   //规范密码必须由ASCII码33~126之间的字符构成
-                {
-                    if (!(33 <= c && c <= 126))
+                    else
                     {
-                        throw new Exception("符号错误，请重新输入！");
+                        throw new Exception("密码不能为空！");
                     }
-                    if ('0' <= c && c <= '9') //number记录数字个数
-                    {
-                        number++;
-                    }
-                    else                      //character记录字符个数
-                    {
-                        character++;
-                    }
-                }
-                if (number < 5 || character < 2)  //密码的安全系数
-                {
-                    throw new Exception("密码安全系数太低！");
-                }
-                #endregion
-                if (pbxUserPasswordRegister.Password == pbxSurePasswordRegister.Password)
-                {
-                    String UserAnswer = cbxRegister.Text+ tbxUserAnswerRegister.Text;
-                    ViewModelRegister viewModelRegister = new ViewModelRegister();
-                    viewModelRegister.Account = tbxUserAccountRegister.Text;
-                    viewModelRegister.Password = pbxUserPasswordRegister.Password;
-                    viewModelRegister.SurePassword = pbxSurePasswordRegister.Password;
-                    viewModelRegister.RememberPasswerd = "0";
-                    viewModelRegister.RoleName = cbxUserRoleRegister.Text;
-                    viewModelRegister.QuestionOrAnswer = UserAnswer;
-                    ViewModelInformation viewModelInformation = new ViewModelInformation();
-                    viewModelInformation = await PostView(viewModelRegister);
                 }
                 else
                 {
-                    throw new Exception("两次输入的密码不一致！");
+                    throw new Exception("账号不能为空！");
                 }
             }
             catch (Exception ex)
@@ -372,14 +394,63 @@ namespace wpfForWebapi
         Dictionary<string, string> dic2 = new Dictionary<string, string>();
         private async void EtrievePwd_Click(object sender, RoutedEventArgs e)//找回密码事件
         {
-            ViewModelRetrievePsw viewModelRetrievePsw = new ViewModelRetrievePsw();
-            viewModelRetrievePsw.Account = tbxUserAccountEtrievePwd.Text;
-            viewModelRetrievePsw.QuestionOrAnswer = cbxRetrieve.Text + tbxUserAnswerEtrievePwd.Text;
-            viewModelRetrievePsw.NewPassword = pbxUserPasswordResetPwd.Password;
-            viewModelRetrievePsw.SurePassword = pbxSurePasswordResetPwd.Password;
-            ViewModelInformation viewModelInformation = new ViewModelInformation();
-            viewModelInformation = await EtrievePwdView(viewModelRetrievePsw);
-            
+            try
+            {              
+                if (tbxUserAnswerEtrievePwd.Text!="")
+                {
+                    if (pbxUserPasswordResetPwd.Password!="")
+                    {
+                        #region 密码规范
+                        int number = 0, character = 0;
+                        foreach (char c in pbxUserPasswordResetPwd.Password)   //规范密码必须由ASCII码33~126之间的字符构成
+                        {
+                            if (!(33 <= c && c <= 126))
+                            {
+                                throw new Exception("符号错误，请重新输入！");
+                            }
+                            if ('0' <= c && c <= '9') //number记录数字个数
+                            {
+                                number++;
+                            }
+                            else                      //character记录字符个数
+                            {
+                                character++;
+                            }
+                        }
+                        if (number < 5 || character < 2)  //密码的安全系数
+                        {
+                            throw new Exception("新密码安全系数太低！");
+                        }
+                        #endregion
+                        if (pbxUserPasswordResetPwd.Password == pbxSurePasswordResetPwd.Password)
+                        {
+                            ViewModelRetrievePsw viewModelRetrievePsw = new ViewModelRetrievePsw();
+                            viewModelRetrievePsw.Account = tbxUserAccountEtrievePwd.Text;
+                            viewModelRetrievePsw.QuestionOrAnswer = CreateMD5.EncryptWithMD5(cbxRetrieve.Text + tbxUserAnswerEtrievePwd.Text);
+                            viewModelRetrievePsw.NewPassword = CreateMD5.EncryptWithMD5(pbxUserPasswordResetPwd.Password);
+                            viewModelRetrievePsw.SurePassword = CreateMD5.EncryptWithMD5(pbxSurePasswordResetPwd.Password);
+                            ViewModelInformation viewModelInformation = new ViewModelInformation();
+                            viewModelInformation = await EtrievePwdView(viewModelRetrievePsw);
+                        }
+                        else
+                        {
+                            throw new Exception("两次输入的密码不一致！");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("新密码不能为空！");
+                    }
+                }
+                else
+                {
+                    throw new Exception("请您输入密码拾回问题答案！");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("注册失败！错误信息：\n" + ex.Message);
+            }
         }
 
         private void etrievePwdBack_Click(object sender, RoutedEventArgs e)//找回密码界面的返回事件
@@ -391,7 +462,7 @@ namespace wpfForWebapi
         }
 
 
-        private void CbxRetrieve_Loaded(object sender, RoutedEventArgs e)
+        private void CbxRetrieve_Loaded(object sender, RoutedEventArgs e)//找回密码界面的combobox的初始化下拉菜单事件
         {
             dic2.Add("你最喜欢的颜色是", "1");
             dic2.Add("你的生日是", "2");
@@ -401,7 +472,7 @@ namespace wpfForWebapi
             cbxRetrieve.ItemsSource = dic;
             cbxRetrieve.DisplayMemberPath = "Key";
             cbxRetrieve.SelectedIndex = 0;
-        }//找回密码界面的combobox的初始化下拉菜单事件
+        }
 
         private void CbxRetrieve_SelectionChanged(object sender, SelectionChangedEventArgs e)//清空密保问题的答案事件
         {

@@ -71,6 +71,7 @@
     <Compile Include="DAL\AccountContext.cs" />
     <Compile Include="DAL\AccountInitializer.cs" />
     <Compile Include="DAL\UnitOfWork.cs" />
+    <Compile Include="Methods\CreateMD5.cs" />
     <Compile Include="Repositoties\GenericRepository.cs" />
     <Compile Include="Repositoties\IGenericRepository.cs" />
     <Compile Include="ViewModels\ViewModelChangePsw.cs" />
