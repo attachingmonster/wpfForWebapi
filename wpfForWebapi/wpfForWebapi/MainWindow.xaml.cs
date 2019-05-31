@@ -366,32 +366,7 @@ namespace wpfForWebapi
             tbxSurePasswordRegister.Text = "";
 
         }
-        /*private void registerBack2_Click(object sender, RoutedEventArgs e)
-        {
-            /var viewModels = (from us in unitOfWork.SysUserRepository.Get()
-                              join ur in unitOfWork.SysUserRoleRepository.Get() on us.ID equals ur.SysUserID
-                              join r in unitOfWork.SysRoleRepository.Get() on ur.SysRoleID equals r.ID
-
-                              select new ViewModel { ViewUserAccount = us.UserAccount, ViewRoleName = r.RoleName, ViewRoleDec = r.RoleDec }).ToList();
-            ListView.ItemsSource = viewModels;
-            ListView.SelectedIndex = 0;
-            ListView.Items.Refresh();
-            LabTextListView.Content = cbxUserAccountLogin.Text + "用户为管理员";
-            RegisterWindow.Visibility = Visibility.Collapsed;
-            ListViewWindow.Visibility = Visibility.Visible;
-            Height = 421;
-            Width = 656;
-            tbxUserAccountRegister.Text = "";
-            pbxUserPasswordRegister.Password = "";
-            pbxSurePasswordRegister.Password = "";
-            tbxUserAnswer1Register.Text = "";
-            tbxUserAnswer2Register.Text = "";
-            tbxUserAnswer3Register.Text = "";
-            tbxUserAnswer4Register.Text = "";
-            tbxUserAnswer5Register.Text = "";
-            tbxUserPasswordRegister.Text = "";
-            tbxSurePasswordRegister.Text = "";
-        }*/
+      
         private void registerShowPassword_Check(object sender, RoutedEventArgs e) //注册界面中显示密码事件
         {
             tbxUserPasswordRegister.Visibility = Visibility.Visible;
@@ -658,6 +633,96 @@ namespace wpfForWebapi
 
         }
 
+        #region 用户管理界面
+        
+        private async void UserManage_Click(object sender, RoutedEventArgs e)//用户管理按钮事件
+        {
+            AdminWindow.Visibility = Visibility.Collapsed;
+            ListViewWindow.Visibility = Visibility.Visible;          
+            var viewModelUserManage = await UserManage();
+            ListView.ItemsSource = viewModelUserManage;//listview绑定数据源
+            ListView.SelectedIndex = 0;
+            ListView.Items.Refresh();
+        }
+
+        private void BtnChangeRoleListView_Click(object sender, RoutedEventArgs e)//用户管理界面的“修改角色”按钮事件
+        {
+            ChangeRoleWindow.Visibility = Visibility.Visible;
+            ListViewWindow.Visibility = Visibility.Collapsed;
+            Height = 354.131;
+            Width = 350.841;
+            var viewModel = (ViewModelUserManage)ListView.SelectedItem;
+            LabTextChangeRole.Content = "更改" + viewModel.ViewUserAccount + "用户的角色";
+        }
+
+        private void BtnBackListView_Click(object sender, RoutedEventArgs e)//用户管理界面的返回按钮事件
+        {
+            AdminWindow.Visibility = Visibility.Visible;
+            ListViewWindow.Visibility = Visibility.Collapsed;
+        }
+
+        private async void BtnDeleteListView_Click(object sender, RoutedEventArgs e)//删除按钮事件
+        {
+            var viewModel = (ViewModelUserManage)ListView.SelectedItem;//获取listview选中的那一行
+            ViewModelChangeRole viewModelChangeRole = new ViewModelChangeRole();
+            viewModelChangeRole.Account = viewModel.ViewUserAccount;
+            viewModelChangeRole.UserRole = viewModel.ViewRoleName;
+            ViewModelInformation viewModelInformation = new ViewModelInformation();
+            viewModelInformation = await PostDeleteUser(viewModelChangeRole);
+            //重新从远端数据库获取信息并重新绑定listview
+            var viewModelUserManage = await UserManage();
+            ListView.ItemsSource = viewModelUserManage;//listview绑定数据源
+            ListView.SelectedIndex = 0;
+            ListView.Items.Refresh();
+            //combobox的刷新
+            var user = unitOfWork.DataRepository.Get().Where(s => s.UserAccount.Equals(viewModel.ViewUserAccount)).FirstOrDefault();
+            if (user != null)
+            {
+                unitOfWork.DataRepository.Delete(user);//删除数据库中SysUser表相应的值
+                unitOfWork.Save();//保存数据库              
+            }
+            var users = unitOfWork.DataRepository.Get();
+            cbxUserAccountLogin.ItemsSource = users.ToList();       //combobox数据源连接数据库
+            cbxUserAccountLogin.DisplayMemberPath = "UserAccount";  //combobox下拉显示的值
+            cbxUserAccountLogin.SelectedValuePath = "UserAccount";  //combobox选中项显示的值
+            cbxUserAccountLogin.SelectedIndex = 0;               //登陆界面 combobox初始显示第一项
+        }
+
+        /// <summary>
+        /// 删除用户信息提交webapi
+        /// </summary>
+        private async Task<ViewModelInformation> PostDeleteUser(ViewModelChangeRole viewModelChangeRole)
+        {
+            //异常中断，程序不会破溃
+            ViewModelInformation viewModelInformation = null;
+            try
+            {
+                //Post异步提交信息，格式为Json
+                var response = await client.PostAsJsonAsync("http://localhost:60033/api/DeleteUser/PostDeleteUser", viewModelChangeRole);
+                response.EnsureSuccessStatusCode();
+                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                if (viewModelInformation == null)
+                {
+                    viewModelInformation.Message = "网络错误";
+                    return viewModelInformation;
+                }
+                else
+                {
+                    return viewModelInformation;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
+                viewModelInformation.Message = ex.Message;
+                return viewModelInformation;
+            }
+            catch (System.FormatException)
+            {
+                return viewModelInformation;
+            }
+        }
+
 
         /// <summary>
         /// 从webapi获取用户管理信息
@@ -669,15 +734,118 @@ namespace wpfForWebapi
             var viewModelUserManage = await response.Content.ReadAsAsync<List<ViewModelUserManage>>();
             return viewModelUserManage;
         }
+        #endregion
 
-        private async void UserManage_Click(object sender, RoutedEventArgs e)//用户管理按钮事件
+        #region 修改角色界面
+        private async void ManagementWindowChangeRole_Click(object sender, RoutedEventArgs e)//修改用户角色界面的“修改”按钮事件
         {
-            AdminWindow.Visibility = Visibility.Collapsed;
-            ListViewWindow.Visibility = Visibility.Visible;          
-            var viewModelUserManage = await UserManage();
-            ListView.ItemsSource = viewModelUserManage;//listview绑定数据源
-            ListView.SelectedIndex = 0;
-            ListView.Items.Refresh();
+            try
+            {
+                if (cheStudentChangeRole.IsChecked == false && cheTeacherChangeRole.IsChecked == false && cheAdminChangeRole.IsChecked == false)
+                {
+                    throw new Exception("请选择角色！");
+                }
+                else if (cheTeacherChangeRole.IsChecked == false && cheAdminChangeRole.IsChecked == true && cheStudentChangeRole.IsChecked == false || cheTeacherChangeRole.IsChecked == true && cheAdminChangeRole.IsChecked == false && cheStudentChangeRole.IsChecked == false || cheTeacherChangeRole.IsChecked == false && cheAdminChangeRole.IsChecked == false && cheStudentChangeRole.IsChecked == true)
+                {
+                    var viewModel = (ViewModelUserManage)ListView.SelectedItem;//获取listview选中的那一行数据
+                    ViewModelChangeRole viewModelChangeRole = new ViewModelChangeRole();
+                    viewModelChangeRole.Account = viewModel.ViewUserAccount;
+                    viewModelChangeRole.UserRole = viewModel.ViewRoleName;
+                    if(cheTeacherChangeRole.IsChecked == true)
+                    {
+                        viewModelChangeRole.ChangeRoleInformation = "教师";
+                    }
+                    else if (cheStudentChangeRole.IsChecked == true)
+                    {
+                        viewModelChangeRole.ChangeRoleInformation = "学生";
+                    }
+                    else
+                    {
+                        viewModelChangeRole.ChangeRoleInformation = "admin";
+                    }
+                    //修改角色信息提交webapi
+                    ViewModelInformation viewModelInformation = new ViewModelInformation();
+                    viewModelInformation = await PostChangeRole(viewModelChangeRole);
+                    //重新从远端数据库获取信息并重新绑定listview
+                    var viewModelUserManage = await UserManage();
+                    ListView.ItemsSource = viewModelUserManage;//listview绑定数据源
+                    ListView.SelectedIndex = 0;
+                    ListView.Items.Refresh();                  
+                    //自动返回ListView界面
+                    ChangeRoleWindow.Visibility = Visibility.Collapsed;
+                    ListViewWindow.Visibility = Visibility.Visible;
+                    Height = 421;
+                    Width = 656;
+
+                    MessageBox.Show(viewModelInformation.Message);
+
+                    //combobox的刷新
+                    var user = unitOfWork.DataRepository.Get();         //combobox的更新
+                    cbxUserAccountLogin.ItemsSource = user.ToList();       //combobox数据源连接数据库
+                    cbxUserAccountLogin.DisplayMemberPath = "UserAccount";  //combobox下拉显示的值
+                    cbxUserAccountLogin.SelectedValuePath = "UserAccount";  //combobox选中项显示的值
+                    cbxUserAccountLogin.SelectedIndex = 0;               //登陆界面 combobox初始显示第一项   
+
+                }
+                else
+                {
+                    throw new Exception("只能选择一位角色，请重新选择！");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("修改失败！错误信息：\n" + ex.Message);
+            }
         }
+
+        private void ChangeRoleWindowReturn_Click(object sender, RoutedEventArgs e)//修改角色界面的返回按钮事件
+        {
+            ChangeRoleWindow.Visibility = Visibility.Collapsed;
+            ListViewWindow.Visibility = Visibility.Visible;
+            Height = 421;
+            Width = 656;
+        }
+
+
+        /// <summary>
+        /// 修改角色信息提交webapi
+        /// </summary>
+        private async Task<ViewModelInformation> PostChangeRole(ViewModelChangeRole viewModelChangeRole)
+        {
+            //异常中断，程序不会破溃
+            ViewModelInformation viewModelInformation = null;
+            try
+            {
+                //Post异步提交信息，格式为Json
+                var response = await client.PostAsJsonAsync("http://localhost:60033/api/ChangeUserRole/PostChangeUserRole", viewModelChangeRole);
+                response.EnsureSuccessStatusCode();
+                viewModelInformation = await response.Content.ReadAsAsync<ViewModelInformation>();
+                if (viewModelInformation == null)
+                {
+                    viewModelInformation.Message = "网络错误";
+                    return viewModelInformation;
+                }
+                else
+                {
+                    return viewModelInformation;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                //后续保存到数据库里，另外再续返回到webapi的数据库里备查
+                viewModelInformation.Message = ex.Message;
+                return viewModelInformation;
+            }
+            catch (System.FormatException)
+            {
+                return viewModelInformation;
+            }
+        }
+
+
+        
+        #endregion
+
+
     }
 }

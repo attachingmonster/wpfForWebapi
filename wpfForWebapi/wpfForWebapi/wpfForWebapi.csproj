@@ -75,6 +75,7 @@
     <Compile Include="Repositoties\GenericRepository.cs" />
     <Compile Include="Repositoties\IGenericRepository.cs" />
     <Compile Include="ViewModels\ViewModelChangePsw.cs" />
+    <Compile Include="ViewModels\ViewModelChangeRole.cs" />
     <Compile Include="ViewModels\ViewModelInformation.cs" />
     <Compile Include="ViewModels\ViewModelLogin.cs" />
     <Compile Include="ViewModels\ViewModelRegister.cs" />

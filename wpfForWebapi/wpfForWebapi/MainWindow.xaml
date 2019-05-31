@@ -418,7 +418,7 @@
         
         
         <!--用户管理界面-->
-        <Grid Name="ListViewWindow"  Margin="0,0,0,0"   Visibility="Collapsed"  Height="402" VerticalAlignment="Top" >
+        <Grid Name="ListViewWindow"  Margin="0,0,0,0"  Height="402" VerticalAlignment="Top" Visibility="Collapsed" >
             <Grid.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FFE0EAF3" Offset="0"/>
@@ -459,7 +459,7 @@
             </Button>
             <Label Name="LabTextListView" Content="" HorizontalAlignment="Left" Margin="30,0,0,0" VerticalAlignment="Top" Height="27" Width="187" FontSize="14"/>
 
-            <Button x:Name="btnDeleteListView"    Content="删除" Margin="415,17,134,0" Grid.Row="2" VerticalAlignment="Top" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515"  Width="107">
+            <Button x:Name="btnDeleteListView"    Content="删除" Margin="415,17,134,0" Grid.Row="2" VerticalAlignment="Top" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515"  Width="107" Click="BtnDeleteListView_Click">
                 <Button.Background>
                     <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                         <GradientStop Color="#FFA8A6AC" Offset="0.855"/>
@@ -469,7 +469,7 @@
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>
-            <Button x:Name="btnBackListView"    Content="返回" HorizontalAlignment="Left" Margin="535,17,0,0" Grid.Row="2" VerticalAlignment="Top" Width="107" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515" >
+            <Button x:Name="btnBackListView"    Content="返回" HorizontalAlignment="Left" Margin="535,17,0,0" Grid.Row="2" VerticalAlignment="Top" Width="107" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515" Click="BtnBackListView_Click" >
                 <Button.Background>
                     <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                         <GradientStop Color="#FFA8A6AC" Offset="0.855"/>
@@ -479,17 +479,7 @@
                     </LinearGradientBrush>
                 </Button.Background>
             </Button>
-            <Button x:Name="btnAddListView"  Width="107"  Content="增加" Margin="295,17,254,0" Grid.Row="2" VerticalAlignment="Top" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515"  >
-                <Button.Background>
-                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
-                        <GradientStop Color="#FFA8A6AC" Offset="0.855"/>
-                        <GradientStop Color="#FFBCBAC3" Offset="0.104"/>
-                        <GradientStop Color="#FFC6C3CD" Offset="0.353"/>
-                        <GradientStop Color="#FFD4D2DA" Offset="0.542"/>
-                    </LinearGradientBrush>
-                </Button.Background>
-            </Button>
-            <Button x:Name="btnChangeRoleListView"  Width="107"  Content="修改角色" Margin="175,17,374,0" Grid.Row="2" VerticalAlignment="Top" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515"  >
+            <Button x:Name="btnChangeRoleListView"  Width="107"  Content="修改角色" Margin="175,17,374,0" Grid.Row="2" VerticalAlignment="Top" Height="26" BorderBrush="#FFA3A7B4" FontSize="16" FontWeight="Bold" Foreground="#FF151515" Click="BtnChangeRoleListView_Click"  >
                 <Button.Background>
                     <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
                         <GradientStop Color="#FFA8A6AC" Offset="0.855"/>
@@ -509,7 +499,16 @@
             <Button Content="用户管理" HorizontalAlignment="Left" Margin="239,97,0,0" VerticalAlignment="Top" Width="133" Height="46" FontSize="22" Click="UserManage_Click"/>
         </Grid>
 
-
+        <!--修改角色界面-->
+        <Grid Name="ChangeRoleWindow" HorizontalAlignment="Left" Height="354" VerticalAlignment="Top" Width="351" Visibility="Collapsed">
+            <Rectangle Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" HorizontalAlignment="Left" Height="354" Stroke="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" VerticalAlignment="Top" Width="351"/>
+            <Label Name="LabTextChangeRole" Content="" HorizontalAlignment="Left" Margin="70,26,0,0" VerticalAlignment="Top" Height="41" Width="237" FontSize="20"/>
+            <CheckBox Name="cheStudentChangeRole" Content="学生" HorizontalAlignment="Left" Margin="140,101,0,0" VerticalAlignment="Top" FontSize="20" Height="30" Width="135"/>
+            <CheckBox Name="cheTeacherChangeRole" Content="教师" HorizontalAlignment="Left" Margin="140,165,0,0" VerticalAlignment="Top" FontSize="20" RenderTransformOrigin="0.159,-0.271"/>
+            <CheckBox Name="cheAdminChangeRole" Content="admin" HorizontalAlignment="Left" Margin="140,231,0,0" VerticalAlignment="Top" FontSize="20"/>
+            <Button Content="修改" HorizontalAlignment="Left" Margin="52,290,0,0" VerticalAlignment="Top" Width="105" Height="38" FontSize="20" Click="ManagementWindowChangeRole_Click"/>
+            <Button Content="返回" HorizontalAlignment="Left" Margin="206,290,0,0" VerticalAlignment="Top" Width="105" Height="38" RenderTransformOrigin="0.14,0.461" FontSize="20" Click="ChangeRoleWindowReturn_Click" />
+        </Grid>
     </Grid>
 </Window>
 
