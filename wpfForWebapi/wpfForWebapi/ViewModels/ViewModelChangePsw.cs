@@ -8,6 +8,9 @@ namespace wpfForWebapi.ViewModels
 {
     public class ViewModelChangePsw
     {
+        /// <summary>
+        /// 修改密码界面的信息
+        /// </summary>
         public String Account { get; set; }
 
         public String OldPassword { get; set; }

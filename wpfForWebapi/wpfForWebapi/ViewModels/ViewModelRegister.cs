@@ -30,7 +30,7 @@ namespace wpfForWebapi.ViewModels
         /// <summary>
         /// 记忆密码，自动登录
         /// </summary>
-        public String RememberPasswerd { get; set; }
+        public String RememberPassword { get; set; }
         /// <summary>
         /// 角色，根据场景自动赋予一个初始角色
         /// </summary>
